@@ -13,3 +13,4 @@ export interface TimerProps {
   onClose: () => void;
   timer?: Timer;
 }
+
