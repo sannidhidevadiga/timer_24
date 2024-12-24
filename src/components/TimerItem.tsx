@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Trash2, RotateCcw, Pencil } from "lucide-react";
-import { Timer } from "../types/timer";
+import { TimerItemProps } from "../types/timer";
 import { formatTime } from "../utils/time";
 import { useTimerStore } from "../store/useTimerStore";
 import { toast } from "sonner";
@@ -10,9 +10,6 @@ import { TimerProgress } from "./TimerProgress";
 import { Button } from "./button";
 import { TimerModal } from "./AddEditTimerModal";
 
-interface TimerItemProps {
-  timer: Timer;
-}
 
 export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
   const { toggleTimer, deleteTimer, updateTimer, restartTimer } =

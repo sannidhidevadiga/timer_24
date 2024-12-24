@@ -1,5 +1,3 @@
-// src/components/ActionButton.tsx
-
 import React from 'react';
 import { ButtonProps } from '../types/button';
 

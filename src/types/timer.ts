@@ -14,3 +14,6 @@ export interface TimerProps {
   timer?: Timer;
 }
 
+export interface TimerItemProps {
+  timer: Timer;
+}
