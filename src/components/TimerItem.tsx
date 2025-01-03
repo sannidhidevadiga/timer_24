@@ -9,15 +9,34 @@ import { TimerControls } from "./TimerControls";
 import { TimerProgress } from "./TimerProgress";
 import { Button } from "./button";
 import { TimerModal } from "./AddEditTimerModal";
+import './timer.css';
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
+  }, []);
+
+  return isMobile;
+};
 
 export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
-  const { toggleTimer, deleteTimer, updateTimer, restartTimer } =
-    useTimerStore();
+  const { toggleTimer, deleteTimer, updateTimer, restartTimer } = useTimerStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<number | null>(null);  // Unique interval for each timer
   const timerAudio = TimerAudio.getInstance();
   const hasEndedRef = useRef(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (timer.isRunning) {
@@ -29,25 +48,28 @@ export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
           timerAudio.play().catch(console.error);
 
           toast.success(`Timer "${timer.title}" has ended!`, {
-            duration: 5000,
+            duration: Infinity,
+            position: isMobile ? "bottom-center" : "top-right",
+            className: 'custom-toast',
             action: {
               label: "Dismiss",
-              onClick: () => timerAudio.stop(),
+              onClick: () => {
+                timerAudio.stop();
+                toast.dismiss();
+              },
             },
           });
         }
       }, 1000);
     }
 
-    return () => clearInterval(intervalRef.current!);
-  }, [
-    timer.isRunning,
-    timer.id,
-    timer.remainingTime,
-    timer.title,
-    timerAudio,
-    updateTimer,
-  ]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [timer.isRunning, timer.id, timer.remainingTime, timer.title, timerAudio, updateTimer, isMobile]);
 
   const handleRestart = () => {
     hasEndedRef.current = false;
