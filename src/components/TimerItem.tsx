@@ -31,22 +31,21 @@ const useIsMobile = () => {
 };
 
 export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
-  const { toggleTimer, deleteTimer, updateTimer, restartTimer } = useTimerStore();
+  const { toggleTimer, deleteTimer, updateTimer, startTime ,restartTimer} = useTimerStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const intervalRef = useRef<number | null>(null);  // Unique interval for each timer
+  const intervalRef = useRef<number | null>(null); 
   const timerAudio = TimerAudio.getInstance();
   const hasEndedRef = useRef(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (timer.isRunning) {
+    if (timer.isRunning && startTime !== null && timer.remainingTime > 0) {
       intervalRef.current = window.setInterval(() => {
         updateTimer(timer.id);
 
         if (timer.remainingTime <= 1 && !hasEndedRef.current) {
           hasEndedRef.current = true;
           timerAudio.play().catch(console.error);
-
           toast.success(`Timer "${timer.title}" has ended!`, {
             duration: Infinity,
             position: isMobile ? "bottom-center" : "top-right",
@@ -61,16 +60,21 @@ export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
           });
         }
       }, 1000);
-    }
 
-    return () => {
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-    };
-  }, [timer.isRunning, timer.id, timer.remainingTime, timer.title, timerAudio, updateTimer, isMobile]);
-
+    }
+  }, [timer.isRunning, timer.id, startTime, updateTimer]);
+  
   const handleRestart = () => {
     hasEndedRef.current = false;
     restartTimer(timer.id);
